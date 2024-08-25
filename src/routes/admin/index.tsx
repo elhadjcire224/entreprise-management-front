@@ -1,8 +1,10 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { AdminDashboard } from '@/components/admin_dashbord';
+import { AdminLayout } from '@/components/admin_layout';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/admin/')({
-  beforeLoad: async ({ location }) => {
-    if (1) {
+  beforeLoad: async ({ location, context }) => {
+    if (!context.auth.isAuthenticated) {
       throw redirect({
         to: "/login",
         search: {
@@ -15,5 +17,13 @@ export const Route = createFileRoute('/admin/')({
       })
     }
   },
-  component: () => <div>Hello /admin/!</div>
+  component: () => <AdminDashboardPage />,
 })
+
+function AdminDashboardPage() {
+  return (
+    <AdminLayout>
+          <AdminDashboard />
+    </AdminLayout>
+  );
+}

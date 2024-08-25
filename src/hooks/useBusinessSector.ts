@@ -6,7 +6,7 @@ interface BusinessSector {
   name: string;
 }
 
-export function useBusinessSector() {
+export default function useBusinessSector() {
   const [sectors, setSectors] = useState<BusinessSector[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +18,7 @@ export function useBusinessSector() {
       try {
         const response = await api.get('/business-sectors');
         setSectors(response.data);
+
       } catch (err) {
         setError('Erreur lors de la récupération des secteurs d\'activité');
         console.error('Error fetching business sectors:', err);
@@ -27,6 +28,7 @@ export function useBusinessSector() {
     };
 
     fetchSectors();
+
   }, []);
 
   return { sectors, isLoading, error };

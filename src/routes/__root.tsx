@@ -1,13 +1,17 @@
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import * as React from 'react'
+import useAuth from '@/hooks/useAuth'
+import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 
-export const Route = createRootRoute({
-
-  component: () => (
-    <React.Fragment>
-      <Outlet />
-    <TanStackRouterDevtools />
-    </React.Fragment>
-  ),
+interface AuthContext {
+  isAuthenticated: boolean
+  user: ReturnType<typeof useAuth>['user']
+  login: ReturnType<typeof useAuth>['login']
+  logout: ReturnType<typeof useAuth>['logout']
+  register: ReturnType<typeof useAuth>['register']
+}
+interface MyRouterContext {
+  // The ReturnType of your useAuth hook or the value of your AuthContext
+  auth: AuthContext
+}
+export const Route = createRootRouteWithContext<MyRouterContext>()({
+  component: () => <Outlet />,
 })

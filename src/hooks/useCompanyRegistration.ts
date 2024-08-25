@@ -1,12 +1,12 @@
+import api from '@/lib/api';
 import { useState } from 'react';
-import api from '../lib/api';
 
-interface CompanyRegistrationData {
+type CompanyRegistrationData = {
   basicInfo: {
-    name: string;
-    representativeFirstName: string;
-    representativeLastName: string;
-    representativePosition: string;
+    companyName: string;
+    firstNames: string;
+    lastName: string;
+    position: string;
     email: string;
     phone: string;
     yearOfCreation: number;
@@ -18,50 +18,59 @@ interface CompanyRegistrationData {
   paymentProofFile: File;
 }
 
+type SimpleError = {
+  message: string;
+  field: string;
+  rule: string;
+}
+
 export const useCompanyRegistration = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<SimpleError[]>([]);
 
   const registerCompany = async (data: CompanyRegistrationData) => {
     setIsLoading(true);
-    setError(null);
+    setErrors([]);
 
     try {
       // Étape 1 : Initialisation
       const initResponse = await api.post('/companies', data.basicInfo);
-      const registrationToken : string = initResponse.data.registrationToken;
-      const companyId : string = initResponse.data.companyId;
+      const { registrationToken, companyId } = initResponse.data;
 
       // Étape 2 : Upload des fichiers
       const formDataRCCM = new FormData();
       formDataRCCM.append('rccm', data.rccmFile);
       formDataRCCM.append('registrationToken', registrationToken);
-      await api.post(`/companies/${companyId}/rccm`, formDataRCCM,{
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      await api.post(`/companies/${companyId}/rccm`, formDataRCCM, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       const formDataPayment = new FormData();
       formDataPayment.append('paymentFile', data.paymentProofFile);
       formDataPayment.append('registrationToken', registrationToken);
-      await api.post(`/companies/${companyId}/payment-proof`, formDataPayment,{
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      await api.post(`/companies/${companyId}/payment-proof`, formDataPayment, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       // Étape 3 : Finalisation
-      const finalResponse = await api.post(`/companies/${companyId}/finalize`, { registrationToken });
+      await api.post(`/companies/${companyId}/finalize`, { registrationToken });
 
-      return finalResponse.data;
-    } catch (err) {
-      setError("Une erreur est survenue lors de l'enregistrement de l'entreprise.");
-      throw err;
+      return { success: true };
+    } catch (error: any) {
+      if (error.response && error.response.data && Array.isArray(error.response.data.errors)) {
+        setErrors(error.response.data.errors.map((err: any) => ({
+          message: err.message,
+          field: err.field,
+          rule: err.rule
+        })));
+      } else {
+        setErrors([{ message: "Une erreur est survenue lors de l'enregistrement", field: "global", rule: "unknown" }]);
+      }
+      return { success: false, errors };
     } finally {
       setIsLoading(false);
     }
   };
 
-  return { registerCompany, isLoading, error };
+  return { registerCompany, isLoading, errors };
 };
