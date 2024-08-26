@@ -1,50 +1,54 @@
-# React + TypeScript + Vite
+# Frontend d'Enregistrement d'Entreprises
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend de l'application d'Enregistrement d'Entreprises, construit avec React et Vite.
 
-Currently, two official plugins are available:
+## Prérequis
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js (v14 ou supérieur)
+- npm ou yarn
 
-## Expanding the ESLint configuration
+## Lancement rapide
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+1. Clonez le dépôt :
+   ```
+   git clone <url-du-repo-frontend>
+   cd <nom-du-dossier-frontend>
+   ```
 
-- Configure the top-level `parserOptions` property like this:
+2. Installez les dépendances :
+   ```
+   npm install
+   # ou
+   yarn install
+   ```
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+3. Configurez l'URL de l'API :
+   - Copiez `.env.example` en `.env`
+   - Modifiez `VITE_API_URL` dans `.env` pour pointer vers votre backend
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+4. Démarrez l'application en mode développement :
+   ```
+   npm run dev
+   # ou
+   yarn dev
+   ```
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+L'application sera accessible à `http://localhost:5173`.
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## Scripts disponibles
+
+- `npm run dev` : Lance le serveur de développement
+- `npm run build` : Construit l'application pour la production
+- `npm run preview` : Prévisualise la version de production en local
+
+## Développement
+
+- L'application utilise React Query pour la gestion des états et des requêtes API.
+- Tailwind CSS est utilisé pour le styling.
+- Vérifiez `src/components` pour les composants réutilisables.
+- Les routes sont définies dans `src/App.tsx` ou un fichier de routage dédié.
+
+## Remarques
+
+- Assurez-vous que le backend est en cours d'exécution et accessible.
+- Pour un déploiement en production, ajustez les variables d'environnement en conséquence.
