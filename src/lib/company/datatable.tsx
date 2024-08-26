@@ -9,80 +9,60 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { RankingInfo, rankItem } from '@tanstack/match-sorter-utils'
 import {
     ColumnDef,
-    ColumnFiltersState,
-    FilterFn,
     flexRender,
     getCoreRowModel,
-    getFilteredRowModel,
-    getSortedRowModel,
-    SortingState,
     useReactTable,
 } from "@tanstack/react-table"
 import { FilterIcon, SearchIcon } from 'lucide-react'
-import { useState } from 'react'
-
-declare module '@tanstack/table-core' {
-  interface FilterFns {
-    fuzzy: FilterFn<unknown>
-  }
-  interface FilterMeta {
-    itemRank: RankingInfo
-  }
-}
-
-const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
-  const itemRank = rankItem(row.getValue(columnId), value)
-  addMeta({ itemRank })
-  return itemRank.passed
-}
+import { useEffect, useState } from 'react'
+import { companyStatus } from "./company_types"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   onPaginationChange: (page: number) => void
+  onSearchChange: (search: string) => void
+  onStatusFilterChange: (status: companyStatus | '') => void
   pageCount: number
   pageIndex: number
-  filterColumn?: string
-  filterOptions?: string[]
+  isLoading: boolean
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   onPaginationChange,
+  onSearchChange,
+  onStatusFilterChange,
   pageCount,
   pageIndex,
-  filterColumn,
-  filterOptions,
+  isLoading,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<companyStatus | ''>('')
 
   const table = useReactTable({
     data,
     columns,
-    filterFns: {
-      fuzzy: fuzzyFilter,
-    },
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
-    globalFilterFn: fuzzyFilter,
-    state: {
-      sorting,
-      columnFilters,
-      globalFilter,
-    },
     manualPagination: true,
     pageCount,
   })
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onSearchChange(search)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [search])
+
+  const handleStatusFilterChange = (status: companyStatus | '') => {
+    setStatusFilter(status)
+    onStatusFilterChange(status)
+  }
 
   return (
     <div>
@@ -91,34 +71,36 @@ export function DataTable<TData, TValue>({
           <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Rechercher..."
-            value={globalFilter ?? ''}
-            onChange={(event) => setGlobalFilter(event.target.value)}
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
             className="pl-8"
           />
         </div>
-        {filterColumn && filterOptions && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <FilterIcon className="mr-2 h-4 w-4" />
-                Filtrer par statut
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {filterOptions.map((option) => (
-                <DropdownMenuCheckboxItem
-                  key={option}
-                  checked={table.getColumn(filterColumn)?.getFilterValue() === option}
-                  onCheckedChange={(value) =>
-                    table.getColumn(filterColumn)?.setFilterValue(value ? option : undefined)
-                  }
-                >
-                  {option}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <FilterIcon className="mr-2 h-4 w-4" />
+              Filtrer par statut
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuCheckboxItem
+              checked={statusFilter === ''}
+              onCheckedChange={() => handleStatusFilterChange('')}
+            >
+              Tous
+            </DropdownMenuCheckboxItem>
+            {Object.values(companyStatus).map((status) => (
+              <DropdownMenuCheckboxItem
+                key={status}
+                checked={statusFilter === status}
+                onCheckedChange={() => handleStatusFilterChange(status)}
+              >
+                {status}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="rounded-md border">
         <Table>
@@ -139,7 +121,13 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  Chargement...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
