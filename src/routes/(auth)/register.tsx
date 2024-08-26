@@ -3,11 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/(auth)/register')({
-  beforeLoad: async ({context}) => {
-    if (context.auth.isAuthenticated) {
-      throw redirect({
-        to: '/admin',
-      })
+  beforeLoad: async ({ context }) => {
+    if (context.auth.user) {
+      throw redirect({ to: '/admin' })
     }
   },
   component: RegisterPage

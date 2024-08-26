@@ -1,26 +1,18 @@
 
 import LoginForm from "@/components/login_form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from '@/hooks/useAuth';
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 export const Route = createFileRoute('/(auth)/login')({
-  beforeLoad: async ({context}) => {
-    if (context.auth.isAuthenticated) {
-      throw redirect({
-        to: '/admin',
-      })
+  beforeLoad: async ({ context }) => {
+    if (context.auth.user) {
+      throw redirect({ to: '/admin' })
     }
   },
   component: LoginPage
 })
 
 export default function LoginPage() {
-  const {isAuthenticated} = useAuth()
-  const navigate = useNavigate()
-  if (isAuthenticated) {
-    navigate({to:'/admin',replace:true})
-    return
-  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">

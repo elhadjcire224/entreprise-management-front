@@ -2,9 +2,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthProvider';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { Lock, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -18,8 +17,8 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
-  const { login, isLoading } = useAuth();
-  const navigate = useNavigate()
+  const { login } = useAuthContext()
+
   const [loginError, setLoginError] = useState<string | null>(null);
 
   const form = useForm<LoginFormValues>({
@@ -32,10 +31,10 @@ export default function LoginForm() {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      await login(values);
-      console.log('pushed')
-      navigate({to:'/admin',replace:true})
+      await login(values.email, values.password);
 
+      window.location.replace('/admin/companies')
+      // navigate({to: '/admin'})
     } catch (err: any) {
       if (err.response && err.response.data && err.response.data.errors) {
         setLoginError('Email ou mot de passe incorrect');
@@ -85,8 +84,8 @@ export default function LoginForm() {
             <AlertDescription>{loginError}</AlertDescription>
           </Alert>
         )}
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Connexion en cours...' : 'Se connecter'}
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting? 'Connexion en cours...' : 'Se connecter'}
         </Button>
       </form>
     </Form>

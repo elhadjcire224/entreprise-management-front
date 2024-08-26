@@ -1,5 +1,13 @@
-"use client"
-
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -46,6 +54,7 @@ export function BusinessSectorsTable() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingSector, setEditingSector] = useState<BusinessSector | null>(null)
+  const [deletingSector, setDeletingSector] = useState<BusinessSector | null>(null)
   const [sectorName, setSectorName] = useState('')
   const queryClient = useQueryClient()
 
@@ -90,9 +99,12 @@ export function BusinessSectorsTable() {
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey:['businessSectors']})
       toast.success('Secteur supprimé avec succès')
+      setDeletingSector(null)
     },
-    onError: () => {
-      toast.error('Erreur lors de la suppression du secteur')
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.message || 'Une erreur est survenue lors de la suppression'
+      toast.error(errorMessage)
+      setDeletingSector(null)
     },
   })
 
@@ -110,9 +122,13 @@ export function BusinessSectorsTable() {
     setIsModalOpen(true)
   }
 
-  const handleDelete = (sectorId: number) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce secteur ?')) {
-      deleteMutation.mutate(sectorId)
+  const handleDelete = (sector: BusinessSector) => {
+    setDeletingSector(sector)
+  }
+
+  const confirmDelete = () => {
+    if (deletingSector) {
+      deleteMutation.mutate(deletingSector.id)
     }
   }
 
@@ -215,12 +231,29 @@ export function BusinessSectorsTable() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" onClick={handleSubmit} disabled={mutation.isLoading}>
+            <Button type="submit" onClick={handleSubmit} disabled={mutation.isPending}>
               {editingSector ? 'Modifier' : 'Ajouter'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deletingSector} onOpenChange={() => setDeletingSector(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Êtes-vous sûr de vouloir supprimer ce secteur ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action supprimera le secteur <strong>"{deletingSector?.name} </strong>" et ses <strong> {deletingSector?.companies_count}</strong> entreprises associées. Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction  onClick={confirmDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -29,7 +29,7 @@ export const Route = createFileRoute('/')({
             Connexion
           </Link>
           <Link
-            to='/admin'
+            to='/admin/companies'
             className="text-sm font-medium text-primary-foreground hover:underline underline-offset-4"
 
           >

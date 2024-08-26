@@ -1,3 +1,4 @@
+import { useUserRole } from "@/hooks/useUserRole";
 import { cn } from "@/lib/utils";
 import { Link, Outlet, useLocation } from '@tanstack/react-router';
 import {
@@ -9,12 +10,6 @@ import {
 import { ReactNode } from 'react';
 import Header from "./header";
 
-const sidebarItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', to: '/admin' },
-  { icon: Building2, label: 'Companies', to: '/admin/companies' },
-  { icon: Briefcase, label: 'Business Sectors', to: '/admin/business-sectors' },
-  { icon: Users, label: 'Users', to: '/admin/users' },
-];
 
 interface AdminLayoutProps {
   children?: ReactNode;
@@ -22,6 +17,20 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const location = useLocation();
+  const { isAdmin } = useUserRole();
+
+  const sidebarItems = [
+
+      ...(isAdmin
+        ? [
+            { icon: LayoutDashboard, label: 'Dashboard', to: '/admin' },
+          { icon: Building2, label: 'Companies', to: '/admin/companies' },
+            { icon: Briefcase, label: 'Business Sectors', to: '/admin/business-sectors' },
+            { icon: Users, label: 'Users', to: '/admin/users' },
+          ]
+        : [{ icon: Building2, label: 'Companies', to: '/admin/companies' }]),
+
+    ];
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground dark:bg-[#1e1e1e] dark:text-white">

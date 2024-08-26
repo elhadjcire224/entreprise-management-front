@@ -1,6 +1,10 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import api from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
+import { Link } from "@tanstack/react-router";
 import { BuildingIcon, CheckIcon, ClockIcon, XIcon } from 'lucide-react';
 
 const DashboardMetric = ({ title, value, change, icon: Icon }) => (
@@ -16,32 +20,34 @@ const DashboardMetric = ({ title, value, change, icon: Icon }) => (
   </Card>
 );
 
-export function AdminDashboard() {
-  const metrics = [
-    { title: "Total Companies", value: "1,234", change: "+5% from last month", icon: BuildingIcon },
-    { title: "Pending Validations", value: "87", change: "+10% from last month", icon: ClockIcon },
-    { title: "Validated This Month", value: "42", change: "+15% from last month", icon: CheckIcon },
-    { title: "Rejected This Month", value: "15", change: "-5% from last month", icon: XIcon },
-  ];
+const iconMap = {
+  BuildingIcon,
+  CheckIcon,
+  ClockIcon,
+  XIcon,
+};
 
-  const recentActivities = [
-    { company: "Acme Inc.", action: "Validated", user: "John Doe", dateTime: "2023-05-01 10:30 AM" },
-    { company: "Globex Corp.", action: "Pending", user: "Jane Smith", dateTime: "2023-04-30 3:45 PM" },
-    { company: "Stark Industries", action: "Rejected", user: "Bob Johnson", dateTime: "2023-04-29 9:15 AM" },
-    { company: "Wayne Enterprises", action: "Validated", user: "Alice Williams", dateTime: "2023-04-28 2:00 PM" },
-    { company: "Oscorp Industries", action: "Pending", user: "Charlie Brown", dateTime: "2023-04-27 11:30 AM" },
-  ];
+
+
+export function AdminDashboard() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['adminDashboard'],
+    queryFn: () => api.get('/admin/dashboard').then(res => res.data),
+  });
+
+  if (isLoading) return <div>Chargement...</div>;
+  if (error) return <div>Une erreur est survenue : {error.message}</div>;
+
+  const { metrics, recentActivities } = data;
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Dashboard</h1>
-
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {metrics.map((metric, index) => (
-          <DashboardMetric key={index} {...metric} />
+          <DashboardMetric key={index} {...metric} icon={iconMap[metric.icon]} />
         ))}
       </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Recent Activities</CardTitle>
@@ -70,7 +76,7 @@ export function AdminDashboard() {
           </Table>
         </CardContent>
         <CardFooter className="flex justify-end">
-          <Button variant="outline" size="sm">View All</Button>
+          <Button variant="outline" size="sm"><Link to="/admin/companies">View All</Link></Button>
         </CardFooter>
       </Card>
     </div>

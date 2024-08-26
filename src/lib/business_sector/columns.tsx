@@ -32,9 +32,8 @@ export const columns: ColumnDef<BusinessSectorDataTable>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const sector = row.original
-
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -45,11 +44,11 @@ export const columns: ColumnDef<BusinessSectorDataTable>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => console.log('Modifier', sector)}>
+            <DropdownMenuItem  onClick={() => table.options.meta?.editSector(sector)}>
               <Pencil className="mr-2 h-4 w-4" />
               Modifier
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => console.log('Supprimer', sector)}>
+            <DropdownMenuItem onClick={() => table.options.meta?.deleteSector(sector)}>
               <Trash className="mr-2 h-4 w-4" />
               Supprimer
             </DropdownMenuItem>

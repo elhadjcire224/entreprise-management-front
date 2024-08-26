@@ -5,15 +5,14 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { RegistrationFormValues, registrationSchema } from '@/lib/zod-schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from '@tanstack/react-router';
 import { Lock, Mail, User } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 
 export function RegistrationForm() {
-  const { register, isLoading } = useAuth();
-  const navigate = useNavigate();
+  const { register,  isAdmin } = useAuth();
+
 
   const [registrationError, setRegistrationError] = useState<string | null>(null);
 
@@ -34,7 +33,8 @@ export function RegistrationForm() {
         email: values.email,
         password: values.password,
       });
-      navigate({ to: '/admin' });
+
+     window.location.replace('/admin/companies')
     } catch (err: any) {
       if (err.response && err.response.data && err.response.data.errors) {
         const errors = err.response.data.errors;
@@ -124,8 +124,8 @@ export function RegistrationForm() {
             <AlertDescription>{registrationError}</AlertDescription>
           </Alert>
         )}
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Inscription en cours..." : "S'inscrire"}
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+          { form.formState.isSubmitting ? "Inscription en cours..." : "S'inscrire" }
         </Button>
       </form>
     </Form>

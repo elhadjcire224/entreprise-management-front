@@ -1,30 +1,20 @@
-import { AdminLayout } from '@/components/admin_layout';
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 
 import { useCompanies } from '@/hooks/useCompanies';
 import { columns } from '@/lib/company/colums';
 import { DataTable } from '@/lib/company/datatable';
 import { useState } from 'react';
-;
+
 export const Route = createFileRoute('/admin/companies')({
-  beforeLoad: async ({ location, context }) => {
-      if (!context.auth.isAuthenticated) {
-        throw redirect({
-          to: "/login",
-          search: {
-            redirect: location.href,
-          },
-        })
-      }
-    },
+
   component: () => <AdminCompaniesPage />,
 })
 
 function AdminCompaniesPage() {
   return (
-    <AdminLayout>
+
     <CompaniesTable />
-    </AdminLayout>
+
   );
 }
 

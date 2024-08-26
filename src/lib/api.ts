@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Function to handle logout
 const handleLogout = () => {
-  localStorage.removeItem('auth_state')
+  localStorage.removeItem('token')
   delete api.defaults.headers.common['Authorization']
   window.dispatchEvent(new Event('logout'))
   // Rediriger vers la page de connexion
@@ -22,16 +22,10 @@ const handleLogout = () => {
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    const authData = localStorage.getItem('auth_state')
-    try {
-      const { token } = JSON.parse(authData)
-      if (token) {
-        config.headers['Authorization'] = `Bearer ${token.token}`
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération du token:', error)
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`
     }
-
     return config
   },
   (error) => Promise.reject(error)
